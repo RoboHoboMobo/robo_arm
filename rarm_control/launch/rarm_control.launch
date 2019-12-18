@@ -10,7 +10,11 @@
 					 joint2_position_controller
 					 joint3_position_controller
 					 joint4_position_controller
-					 joint5_position_controller"/>
+					 joint5_position_controller
+					 gripper_joint_position_controller
+					 grp_jnt_l1_position_controller
+					 grp_jnt_r0_position_controller
+					 grp_jnt_r1_position_controller"/>
 
   <!-- convert joint states to TF transforms for rviz, etc -->
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
