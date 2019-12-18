@@ -1,0 +1,497 @@
+<?xml version="1.0"?>
+<!-- 5 DOF Revolute Manipulator -->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="rarm" >
+
+  <xacro:property name="PI" value="3.1415926535897931"/>
+  <xacro:property name="mass" value="1" />        <!-- arbitrary value for mass -->
+  <xacro:property name="b_length" value="0.1609" />  <!-- base length -->
+  <xacro:property name="b_width" value="0.089" />  <!-- base width -->
+  <xacro:property name="b_height" value="0.0369" /> <!-- base height -->
+
+  <xacro:property name="radius" value="0.031" />  <!-- platform radius -->
+  <xacro:property name="plat_h" value="0.027" />   <!-- platform height -->
+
+  <xacro:property name="l1l" value="0.041" />     <!-- manipulator link1 length -->
+  <xacro:property name="l1w" value="0.038" />     <!-- manipulator link1 width -->
+  <xacro:property name="l1h" value="0.021" />     <!-- manipulator link1 height -->
+
+  <xacro:property name="shift" value="0.005" />   <!-- links mesh displacement -->
+
+  <xacro:property name="length" value="0.09" />   <!-- manipulator links length -->
+  <xacro:property name="width" value="0.0436" />  <!-- manipulator links width -->
+  <xacro:property name="height" value="0.025" />  <!-- manipulator links height -->
+
+  <xacro:property name="grip_l" value="0.049" />  <!-- gripper servo's link length -->
+  <xacro:property name="grip_w" value="0.024" />  <!-- gripper servo's link width -->
+  <xacro:property name="grip_h" value="0.0168" /> <!-- gripper servo's link height -->
+
+  <xacro:property name="finger0_l" value="0.0459" />    <!-- gripper link0 length -->
+  <xacro:property name="finger0_w" value="0.018" />     <!-- gripper link0 width -->
+  <xacro:property name="finger0_h" value="0.0049" />    <!-- gripper link0 height -->
+
+  <xacro:property name="finger1_l" value="0.06" />      <!-- gripper link1 length -->
+  <xacro:property name="finger1_w" value="0.013" />     <!-- gripper link1 width -->
+  <xacro:property name="finger1_h" value="0.016" />     <!-- gripper link1 height -->
+
+  <xacro:property name="grip_jnt_0_x" value="0.007" />  <!-- gripper's joint_0 x-axis displacement -->
+  <xacro:property name="grip_jnt_1_x" value="0.013" />  <!-- gripper's joint_1 x-axis displacement -->
+  <xacro:property name="grip_jnt_1_y" value="0.002" />  <!-- gripper's joint_1 y-axis displacement -->
+
+
+
+  <!-- Import all Gazebo-customization elements, including Gazebo colors -->
+  <xacro:include filename="$(find rarm_description)/urdf/rarm.gazebo" />
+
+  <!-- Used for fixing robot to Gazebo 'base_link' -->
+  <link name="world"/>
+
+  <!-- Base Link -->
+  <link name="base">
+    <collision>
+      <origin xyz="0 0 ${b_height/2}" rpy="0 0 0"/>
+      <geometry>
+	<box size="${b_length} ${b_width} ${b_height}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 ${b_height/2}" rpy="0 0 0"/>
+      <geometry>
+	<!-- box size="${b_length} ${b_width} ${b_height}"/ -->
+        <mesh filename="package://rarm_description/meshes/base.dae" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </visual>
+
+    <inertial>
+      <origin xyz="0 0 ${b_height/2}" rpy="0 0 0"/>
+      <mass value="${mass}"/>
+      <inertia
+	  ixx="1.0" ixy="0.0" ixz="0.0"
+	  iyy="1.0" iyz="0.0"
+	  izz="1.0"/>
+    </inertial>
+  </link>
+
+  <joint name="fixed1" type="fixed">
+    <parent link="world"/>
+    <child link="base"/>
+  </joint>
+
+  <link name="platform">
+    <collision>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="${radius}" length="${plat_h}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="-0.006 0 0" rpy="0 0 0"/>
+      <geometry>
+	<!-- cylinder radius="${radius}" length="${plat_h}"/ -->
+        <mesh filename="package://rarm_description/meshes/platform.dae" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </visual>
+
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="${mass}"/>
+      <inertia
+	  ixx="1.0" ixy="0.0" ixz="0.0"
+	  iyy="1.0" iyz="0.0"
+	  izz="1.0"/>
+    </inertial>
+  </link>
+
+  <joint name="fixed2" type="fixed">
+    <axis xyz="0 0 1"/>
+    <parent link="base"/>
+    <child link="platform"/>
+    <origin xyz="${b_length/2 - radius + 0.010} 0 ${b_height/2 - 0.004}" rpy="0 0 0"/>
+    <!-- limit effort="100" velocity="100" / -->
+    <!-- joint_properties damping="0.0" friction="0.0" / -->
+  </joint>
+
+<!-- Manipulator block -->
+  <link name="link1">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 ${PI/2} 0"/>
+      <geometry>
+	<box size="${l1h} ${l1w} ${l1l}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+	<!-- box size="${l1h} ${l1w} ${l1l}"/ -->
+        <mesh filename="package://rarm_description/meshes/servo.dae" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </visual>
+
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 ${PI/2} 0"/>
+      <mass value="${mass}"/>
+      <inertia
+	  ixx="1.0" ixy="0.0" ixz="0.0"
+	  iyy="1.0" iyz="0.0"
+	  izz="1.0"/>
+    </inertial>
+  </link>
+
+  <joint name="joint1" type="revolute">
+    <axis xyz="0 0 1"/>
+    <parent link="platform"/>
+    <child link="link1"/>
+    <origin xyz="0 0 ${l1h/2 + plat_h/2}" rpy="0 0 0"/>
+    <limit lower="${-pi*3/4}" upper="${pi*3/4}" effort="1000" velocity="10" />
+    <joint_properties damping="0.0" friction="0.0" />
+  </joint>
+
+  <link name="link2">
+    <collision>
+      <origin xyz="${length/2} 0 0" rpy="${PI/2} 0 0"/>
+      <geometry>
+	<box size="${length} ${width} ${height}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="${length/2 + 0.002} -0.002 0" rpy="${PI/2} 0 0"/>
+      <geometry>
+	<!-- box size="${length} ${width} ${height}"/ -->
+        <mesh filename="package://rarm_description/meshes/links.dae" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </visual>
+
+    <inertial>
+      <origin xyz="${length/2} 0 0" rpy="${PI/2} 0 0"/>
+      <mass value="${mass}"/>
+      <inertia
+	  ixx="1.0" ixy="0.0" ixz="0.0"
+	  iyy="1.0" iyz="0.0"
+	  izz="1.0"/>
+    </inertial>
+  </link>
+
+  <joint name="joint2" type="revolute">
+    <axis xyz="0 0 1"/>
+    <parent link="link1"/>
+    <child link="link2"/>
+    <origin xyz="0.007 0 0" rpy="${-PI/2} ${-PI/2} 0"/>
+    <limit lower="${-pi*3/4}" upper="${pi*3/4}" effort="1000" velocity="10" />
+    <joint_properties damping="0.0" friction="0.0" />
+  </joint>
+
+  <link name="link3">
+    <collision>
+      <origin xyz="${length/2} 0 0" rpy="${PI/2} 0 0"/>
+      <geometry>
+	<box size="${length} ${width} ${height}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="${length/2 + 0.002} -0.002 0" rpy="${PI/2} 0 0"/>
+      <geometry>
+	<!-- box size="${length} ${width} ${height}"/ -->
+        <mesh filename="package://rarm_description/meshes/links.dae" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </visual>
+
+    <inertial>
+      <origin xyz="${length/2} 0 0" rpy="${PI/2} 0 0"/>
+      <mass value="${mass}"/>
+      <inertia
+	  ixx="1.0" ixy="0.0" ixz="0.0"
+	  iyy="1.0" iyz="0.0"
+	  izz="1.0"/>
+    </inertial>
+  </link>
+
+  <joint name="joint3" type="revolute">
+    <axis xyz="0 0 1"/>
+    <parent link="link2"/>
+    <child link="link3"/>
+    <origin xyz="${length - shift} 0 0" rpy="0 0 0"/>
+    <limit lower="${-pi*3/4}" upper="${pi*3/4}" effort="1000" velocity="10" />
+    <joint_properties damping="0.0" friction="0.0" />
+  </joint>
+
+  <link name="link4">
+    <collision>
+      <origin xyz="${length/2} 0 0" rpy="${PI/2} 0 0"/>
+      <geometry>
+	<box size="${length} ${width} ${height}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="${length/2 + 0.002} -0.002 0" rpy="${PI/2} 0 0"/>
+      <geometry>
+	<!-- box size="${length} ${width} ${height}"/ -->
+	<mesh filename="package://rarm_description/meshes/links.dae" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </visual>
+
+    <inertial>
+      <origin xyz="${length/2} 0 0" rpy="${PI/2} 0 0"/>
+      <mass value="${mass}"/>
+      <inertia
+	  ixx="1.0" ixy="0.0" ixz="0.0"
+	  iyy="1.0" iyz="0.0"
+	  izz="1.0"/>
+    </inertial>
+  </link>
+
+  <joint name="joint4" type="revolute">
+    <axis xyz="0 0 1"/>
+    <parent link="link3"/>
+    <child link="link4"/>
+    <origin xyz="${length - shift} 0 0" rpy="0 0 0"/>
+    <limit lower="${-pi*3/4}" upper="${pi*3/4}" effort="1000" velocity="10" />
+    <joint_properties damping="0.0" friction="0.0" />
+  </joint>
+
+  <link name="link5">
+    <collision>
+     <origin xyz="${grip_l/2} 0 0" rpy="${PI/2} 0 0"/>
+      <geometry>
+	<box size="${grip_l} ${grip_w} ${grip_h}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="${grip_l/2} -0.002 0" rpy="${PI/2} 0 0"/>
+      <geometry>
+	<!-- box size="${grip_l} ${grip_w} ${grip_h}"/ -->
+        <mesh filename="package://rarm_description/meshes/gripper.dae" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </visual>
+
+    <inertial>
+      <origin xyz="${grip_l/2} 0 0" rpy="${PI/2} 0 0"/>
+      <mass value="${mass}"/>
+      <inertia
+	  ixx="1.0" ixy="0.0" ixz="0.0"
+	  iyy="1.0" iyz="0.0"
+	  izz="1.0"/>
+    </inertial>
+  </link>
+
+  <joint name="joint5" type="revolute">
+    <axis xyz="0 0 1"/>
+    <parent link="link4"/>
+    <child link="link5"/>
+    <origin xyz="${length - shift} 0 0" rpy="0 0 0"/>
+    <limit lower="${-pi*3/4}" upper="${pi*3/4}" effort="1000" velocity="10" />
+    <joint_properties damping="0.0" friction="0.0" />
+  </joint>
+
+<!-- Gripper block -->
+  <link name="finger_l0">
+    <collision>
+     <origin xyz="${finger0_l/2 - grip_jnt_0_x} 0 0" rpy="0 0 0"/>
+      <geometry>
+	<box size="${finger0_l} ${finger0_w} ${finger0_h}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="${finger0_l/2 - grip_jnt_0_x} 0 0" rpy="0 0 0"/>
+      <geometry>
+	<!-- box size="${finger0_l} ${finger0_w} ${finger0_h}"/ -->
+        <mesh filename="package://rarm_description/meshes/l_finger_0.dae" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </visual>
+
+    <inertial>
+      <origin xyz="${finger0_l/2 - grip_jnt_0_x} 0 0" rpy="0 0 0"/>
+      <mass value="${mass}"/>
+      <inertia
+	  ixx="1.0" ixy="0.0" ixz="0.0"
+	  iyy="1.0" iyz="0.0"
+	  izz="1.0"/>
+    </inertial>
+  </link>
+
+<!-- Main gripper joint -->
+  <joint name="gripper_joint" type="revolute">
+    <axis xyz="0 0 1"/>
+    <parent link="link5"/>
+    <child link="finger_l0"/>
+    <origin xyz="${grip_l/2 + grip_jnt_0_x} 0 ${grip_w/2}" rpy="${PI/2} 0 0"/>
+    <limit lower="0.0" upper="${pi/2}" effort="1000" velocity="10" />
+    <joint_properties damping="0.0" friction="0.0" />
+  </joint>
+
+  <link name="finger_r0">
+    <collision>
+     <origin xyz="${finger0_l/2 - grip_jnt_0_x} 0 0" rpy="0 0 0"/>
+      <geometry>
+	<box size="${finger0_l} ${finger0_w} ${finger0_h}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="${finger0_l/2 - grip_jnt_0_x} 0 0" rpy="${PI} 0 0"/>
+      <geometry>
+	<!-- box size="${finger0_l} ${finger0_w} ${finger0_h}"/ -->
+        <mesh filename="package://rarm_description/meshes/l_finger_0.dae" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </visual>
+
+    <inertial>
+      <origin xyz="${finger0_l/2 - grip_jnt_0_x} 0 0" rpy="0 0 0"/>
+      <mass value="${mass}"/>
+      <inertia
+	  ixx="1.0" ixy="0.0" ixz="0.0"
+	  iyy="1.0" iyz="0.0"
+	  izz="1.0"/>
+    </inertial>
+  </link>
+
+<!-- First mimic right -->
+  <joint name="grp_joint_r" type="revolute">
+    <axis xyz="0 0 1"/>
+    <parent link="link5"/>
+    <child link="finger_r0"/>
+    <origin xyz="${grip_l/2 + grip_jnt_0_x} 0 ${-grip_w/2}" rpy="${PI/2} 0 0"/>
+    <limit lower="${-PI/2}" upper="0.0" effort="1000" velocity="10" />
+    <mimic joint="gripper_joint" multiplier="-1" />
+    <joint_properties damping="0.0" friction="0.0" />
+  </joint>
+
+  <link name="finger_l1">
+    <collision>
+     <origin xyz="${finger1_l/2} 0 0" rpy="0 0 0"/>
+      <geometry>
+	<box size="${finger1_l} ${finger1_w} ${finger1_h}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="${finger1_l/2 - 0.01} -0.0032 0" rpy="0 0 0"/>
+      <geometry>
+	<!-- box size="${finger1_l} ${finger1_w} ${finger1_h}"/ -->
+        <mesh filename="package://rarm_description/meshes/l_finger_1.dae" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </visual>
+
+    <inertial>
+      <origin xyz="${finger1_l/2} 0 0" rpy="0 0 0"/>
+      <mass value="${mass}"/>
+      <inertia
+	  ixx="1.0" ixy="0.0" ixz="0.0"
+	  iyy="1.0" iyz="0.0"
+	  izz="1.0"/>
+    </inertial>
+  </link>
+
+<!-- Second mimic left -->
+  <joint name="finger_joint_l" type="revolute">
+    <axis xyz="0 0 1"/>
+    <parent link="finger_l0"/>
+    <child link="finger_l1"/>
+    <origin xyz="${grip_l - grip_jnt_1_x} ${-grip_jnt_1_y} 0" rpy="0 0 0"/>
+    <limit lower="${-PI/2}" upper="0.0" effort="1000" velocity="10" />
+    <mimic joint="gripper_joint" multiplier="-1" />
+    <joint_properties damping="0.0" friction="0.0" />
+  </joint>
+
+  <link name="finger_r1">
+    <collision>
+     <origin xyz="${finger1_l/2} 0 0" rpy="0 0 0"/>
+      <geometry>
+	<box size="${finger1_l} ${finger1_w} ${finger1_h}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="${finger1_l/2 - 0.01} 0.0032 0" rpy="${PI} 0 0"/>
+      <geometry>
+	<!-- box size="${finger1_l} ${finger1_w} ${finger1_h}"/ -->
+        <mesh filename="package://rarm_description/meshes/l_finger_1.dae" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </visual>
+
+    <inertial>
+      <origin xyz="${finger1_l/2} 0 0" rpy="0 0 0"/>
+      <mass value="${mass}"/>
+      <inertia
+	  ixx="1.0" ixy="0.0" ixz="0.0"
+	  iyy="1.0" iyz="0.0"
+	  izz="1.0"/>
+    </inertial>
+  </link>
+
+<!-- Second mimic right -->
+  <joint name="finger_joint_r" type="revolute">
+    <axis xyz="0 0 1"/>
+    <parent link="finger_r0"/>
+    <child link="finger_r1"/>
+    <origin xyz="${grip_l - grip_jnt_1_x} ${grip_jnt_1_y} 0" rpy="0 0 0"/>
+    <limit lower="${-PI/2}" upper="0.0" effort="1000" velocity="10" />
+    <mimic joint="gripper_joint" multiplier="1" />
+    <joint_properties damping="0.0" friction="0.0" />
+  </joint>
+
+
+<!-- Transmissions block -->
+  <transmission name="tran1">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint1">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor1">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="tran2">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint2">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor2">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="tran3">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint3">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor3">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="tran4">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint4">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor4">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="tran5">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint5">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor5">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+
+</robot>
