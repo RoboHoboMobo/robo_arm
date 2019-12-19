@@ -26,6 +26,6 @@
     args="-urdf -model rarm -param robot_description"/>
 
   <!-- ros_control rarm launch file -->
-  <!--include file="$(find rarm_control)/launch/rarm_control.launch" /-->
+  <include file="$(find rarm_control)/launch/rarm_control.launch" />
 
 </launch>
