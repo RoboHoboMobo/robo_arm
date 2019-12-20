@@ -1,10 +1,11 @@
 #include "../include/kinematics.h"
 
-Kinematics::Kinematics()
+// Constructors
+Kinematics::Kinematics(double val)
 {
   for(int i=0; i<4; i++)
     for(int j=0; j<4; j++)
-      m[i][j] = 0.0;
+      m[i][j] = val;
 }
 
 Kinematics::Kinematics(double m00, double m01, double m02, double m03,
@@ -39,19 +40,7 @@ Kinematics::Kinematics(std::vector<double> vect)
       m[i][j] = vect[i*4 + j];
 }
 
-double Kinematics::getValue(int row, int col)
-{
-  return m[row][col];
-}
-
-void Kinematics::getTMatrix(double arr[4][4])
-{
-  for(int i=0; i<4; i++)
-    for(int j=0; j<4; j++)
-      arr[i][j] = m[i][j];
-
-}
-
+// Operators overload
 Kinematics Kinematics::operator -() const
 {
   Kinematics matr;
@@ -143,14 +132,90 @@ Kinematics operator*(double left, Kinematics const &right)
       result.m[i][j] = left * right.m[i][j];
 
   return result;
+}
 
-  //std::vector<double> vec;
-  //
-  //for(int i=0; i<4; i++)
-  //  for(int j=0; j<4; j++)
-  //    vec.push_back(left * right.getValue(i,j));
-  //
-  //Kinematics result(vec);
-  //
-  //return result;
+// Methods
+double Kinematics::getValue(int row, int col)
+{
+  return m[row][col];
+}
+
+void Kinematics::getTMatrix(double arr[4][4])
+{
+  for(int i=0; i<4; i++)
+    for(int j=0; j<4; j++)
+      arr[i][j] = m[i][j];
+
+}
+
+Kinematics Kinematics::DHToM(double alph_i_1, double a_i_1, double d_i, double thet_i)
+{
+  Kinematics Ti_i_1(              cos(thet_i),              -sin(thet_i),            0.0,              a_i_1,
+                    sin(thet_i)*cos(alph_i_1), cos(thet_i)*cos(alph_i_1), -sin(alph_i_1), -sin(alph_i_1)*d_i,
+                    sin(thet_i)*sin(alph_i_1), cos(thet_i)*sin(alph_i_1),  cos(alph_i_1),  cos(alph_i_1)*d_i,
+                                          0.0,                       0.0,            0.0,                1.0);
+
+  return Ti_i_1;
+
+}
+
+Kinematics Kinematics::getFK(double th1, double th2, double th3, double th4, double th5, double th6)
+{
+  Kinematics result;
+
+  result = Kinematics::DHToM(0.0, 0.0, L1, th1) * Kinematics::DHToM(-M_PI/2, 0.0, 0.0, th2-M_PI/2) *
+           Kinematics::DHToM(0.0, L2, 0.0, th3) * Kinematics::DHToM(0.0, L3, 0.0, th4) *
+           Kinematics::DHToM(0.0, L4, 0.0, th5) * Kinematics::DHToM(0.0, L5, 0.0, 0.0) *
+           Kinematics::DHToM(0.0, F0*cos(th6), 0.0, 0.0) * Kinematics::DHToM(0.0, F1, 0.0, 0.0);
+
+  return result;
+}
+
+Kinematics Kinematics::getFK(double j_angles[6])
+{
+  Kinematics result;
+  result = Kinematics::DHToM(0.0, 0.0, L1, j_angles[0]) * Kinematics::DHToM(-M_PI/2, 0.0, 0.0, j_angles[1]-M_PI/2) *
+           Kinematics::DHToM(0.0, L2, 0.0, j_angles[2]) * Kinematics::DHToM(0.0, L3, 0.0, j_angles[3]) *
+           Kinematics::DHToM(0.0, L4, 0.0, j_angles[4]) * Kinematics::DHToM(0.0, L5, 0.0, 0.0) *
+           Kinematics::DHToM(0.0, F0*cos(j_angles[5]), 0.0, 0.0) * Kinematics::DHToM(0.0, F1, 0.0, 0.0);
+
+  return result;
+}
+
+Kinematics Kinematics::getFK(std::vector<double> j_angles)
+{
+  Kinematics result;
+  result = Kinematics::DHToM(0.0, 0.0, L1, j_angles[0]) * Kinematics::DHToM(-M_PI/2, 0.0, 0.0, j_angles[1]-M_PI/2) *
+           Kinematics::DHToM(0.0, L2, 0.0, j_angles[2]) * Kinematics::DHToM(0.0, L3, 0.0, j_angles[3]) *
+           Kinematics::DHToM(0.0, L4, 0.0, j_angles[4]) * Kinematics::DHToM(0.0, L5, 0.0, 0.0) *
+           Kinematics::DHToM(0.0, F0*cos(j_angles[5]), 0.0, 0.0) * Kinematics::DHToM(0.0, F1, 0.0, 0.0);
+
+  return result;
+}
+
+void Kinematics::getRPY(double &r, double &p, double &y)
+{
+  if(m[0][2] < 1)
+  {
+    if(m[0][2] > -1)
+    {
+      r = atan2(-m[1][2], m[2][2]); // Roll
+      p = asin(m[0][2]);            // Pitch
+      y = atan2(-m[0][1], m[0][0]);
+    }
+    else
+    {
+      r = -atan2(m[1][0], m[1][1]);
+      p = -M_PI/2;
+      y = 0.0;
+    }
+  }
+  else
+  {
+    r = atan2(m[1][0], m[1][1]);
+    p = M_PI/2;
+    y = 0.0;
+
+  }
+
 }
