@@ -16,7 +16,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(${PROJECT_NAME}_node src/main.cpp src/kinematics.cpp)
+add_executable(${PROJECT_NAME}_node src/main.cpp src/kinematics.cpp src/trans_matrix.cpp)
 
 target_link_libraries(${PROJECT_NAME}_node
    ${catkin_LIBRARIES}
