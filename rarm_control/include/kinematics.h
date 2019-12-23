@@ -13,11 +13,8 @@
 class Kinematics
 {
 private:
+  TransMatrix ee_pose;
   double th1, th2, th3, th4, th5, th6; // th6: gripper's finger angle
-  double x, y, z;
-  double roll;
-  double pitch;
-  double yaw;
   double theta;
 
   double k;  // IK parametr, 0<=k<=1

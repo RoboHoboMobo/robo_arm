@@ -5,10 +5,13 @@ Kinematics::Kinematics()
   this->th1 = 0.0; this->th2 = 0.0; this->th3 = 0.0;
   this->th4 = 0.0; this->th5 = 0.0; this->th6 = 0.0;
 
-  this->x = 0.0; this->y = 0.0; this->z = 0.0;
-  this->roll  = 0.0;
-  this->pitch = 0.0;
-  this->yaw   = 0.0;
+  TransMatrix m(1.0, 0.0, 0.0, 0.0,
+                0.0, 1.0, 0.0, 0.0,
+                0.0, 0.0, 1.0, 0.0,
+                0.0, 0.0, 0.0, 1.0);
+
+  this->ee_pose = m;
+
   this->theta = 0.0;
 
   k = 0.9;
@@ -19,63 +22,41 @@ Kinematics::Kinematics(double th1, double th2, double th3,
 {
   this->th1 = th1; this->th2 = th2; this->th3 = th3;
   this->th4 = th4; this->th5 = th5; this->th6 = th6;
+  this->theta = th1 + th2 + th3 + th4 + th5 - M_PI/2;
 
-  TransMatrix m = Kinematics::solveFK(th1, th2, th3, th4, th5, th6);
-  this->x = m.getValue(0,3);
-  this->y = m.getValue(1,3);
-  this->z = m.getValue(2,3);
-
-  double r = 0.0;
-  double p = 0.0;
-  double y = 0.0;
-
-  m.getRPY(r, p, y);
-  this->theta = p;
-  this->roll  = 0.0;
-  this->pitch = p + M_PI/2;
-  this->yaw   = atan2(this->y, this->x);
+  this->ee_pose = Kinematics::solveFK(th1, th2, th3, th4, th5, th6);
 
 }
 
 Kinematics::Kinematics(double x, double y, double z, double theta, double grip_angle)
 {
-  this->x = x; this->y = y; this->z = z;
-  this->roll  = 0.0;
-  this->pitch = theta + M_PI/2;
-  this->yaw   = atan2(y,x);
   this->theta = theta;
-
   double a[] = {0.0, 0.0, 0.0, 0.0, 0.0};
   Kinematics::solveIK(x, y, z, theta, grip_angle, a);
 
-  this->th1 = a[0]; this->th2 = a[1]; this->th3 = a[2];
-  this->th4 = a[3]; this->th5 = a[4]; this->th6 = grip_angle;
+  th1 = a[0]; th2 = a[1]; th3 = a[2];
+  th4 = a[3]; th5 = a[4]; th6 = grip_angle;
+
+  this->ee_pose = Kinematics::solveFK(th1, th2, th3, th4, th5, th6);
+
 }
 
 Kinematics::Kinematics(TransMatrix tm)
 {
-  double x = tm.getValue(0,3);
-  double y = tm.getValue(1,3);
-  double z = tm.getValue(2,3);
-  this->x = x;
-  this->y = y;
-  this->z = z;
+  ee_pose = tm;
 
   double r = 0.0;
   double p = 0.0;
-         y = 0.0;
+  double y = 0.0;
 
   tm.getRPY(r, p, y);
-  this->roll  = 0.0;
-  this->pitch = p;
-  this->yaw   = atan2(this->y, this->x);
-  this->theta = p - M_PI/2;
+  theta = p - M_PI/2;
 
   double a[] = {0.0, 0.0, 0.0, 0.0, 0.0};
-  Kinematics::solveIK(x, y, z, p - M_PI/2, 0.0, a);
+  Kinematics::solveIK(tm.getValue(0,3), tm.getValue(1,3), tm.getValue(2,3), p - M_PI/2, 0.0, a);
 
-  this->th1 = a[0]; this->th2 = a[1]; this->th3 = a[2];
-  this->th4 = a[3]; this->th5 = a[4]; this->th6 = 0.0;
+  th1 = a[0]; th2 = a[1]; th3 = a[2];
+  th4 = a[3]; th5 = a[4]; th6 = 0.0;
 
 }
 
@@ -144,6 +125,9 @@ void Kinematics::setK(double k)
 
 void Kinematics::solveIK(double result[5])
 {
+  double x = ee_pose.getValue(0,3);
+  double y = ee_pose.getValue(1,3);
+  double z = ee_pose.getValue(2,3);
   double alpha1 = atan2(y, x);                                // 1st joint's angle
 
   double x5 = x - (L5 + F0*cos(th6) + F1) * cos(theta)*cos(alpha1);
@@ -258,21 +242,7 @@ std::vector<double> Kinematics::getJAngles()
 
 TransMatrix Kinematics::getMatrix()
 {
-  TransMatrix result;
 
-  double r = this->roll;
-  double p = this->pitch;
-  double y = this->yaw;
-
-  result = TransMatrix::RPYtoM(r, p, y);
-
-  TransMatrix xyz(1.0, 0.0, 0.0, this->x,
-                  0.0, 1.0, 0.0, this->y,
-                  0.0, 0.0, 1.0, this->z,
-                  0.0, 0.0, 0.0,     1.0);
-
-  result *= xyz;
-
-  return result;
+  return ee_pose;
 
 }
