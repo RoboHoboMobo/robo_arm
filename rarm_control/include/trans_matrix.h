@@ -39,6 +39,7 @@ public:
   double getValue(int row, int col);
   void getTMatrix(double arr[4][4]);
   void getRPY(double &r, double &p, double &y);
+  static TransMatrix RPYtoM(double r, double p, double y);
   static TransMatrix DHToM(double alph_i_1, double a_i_1, double d_i, double thet_i); // DH-table row to Transformation matrix conversion
 };
 

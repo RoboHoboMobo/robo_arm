@@ -185,3 +185,28 @@ TransMatrix TransMatrix::DHToM(double alph_i_1, double a_i_1, double d_i, double
   return Ti_i_1;
 
 }
+
+TransMatrix TransMatrix::RPYtoM(double r, double p, double y)
+{
+  TransMatrix result;
+
+  TransMatrix mr(1.0,    0.0,     0.0, 0.0,
+                 0.0, cos(r), -sin(r), 0.0,
+                 0.0, sin(r),  cos(r), 0.0,
+                 0.0,    0.0,     0.0, 1.0);
+
+  TransMatrix mp( cos(p), 0.0, sin(p), 0.0,
+                     0.0, 1.0,    0.0, 0.0,
+                 -sin(p), 0.0, cos(p), 0.0,
+                     0.0, 0.0,    0.0, 1.0);
+
+  TransMatrix my(cos(y), -sin(y), 0.0, 0.0,
+                 sin(y),  cos(y), 0.0, 0.0,
+                    0.0,     0.0, 1.0, 0.0,
+                    0.0,     0.0, 0.0, 1.0);
+
+  result = mr * mp * my;
+
+  return result;
+
+}

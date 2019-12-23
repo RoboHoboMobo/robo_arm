@@ -1,3 +1,4 @@
+#include <cmath>
 #include "trans_matrix.h"
 
 #define L1 0.041  // Links lengts
@@ -12,14 +13,42 @@
 class Kinematics
 {
 private:
-  double th1, th2, th3, th4, th5, th6;
-public:
-  Kinematics(double th1 = 0.0, double th2 = 0.0, double th3 = 0.0,
-             double th4 = 0.0, double th5 = 0.0, double th6 = 0.0);
+  double th1, th2, th3, th4, th5, th6; // th6: gripper's finger angle
+  double x, y, z;
+  double roll;
+  double pitch;
+  double yaw;
+  double theta;
 
-  static TransMatrix getFK(double th1, double th2, double th3, double th4, double th5, double th6);
-  static TransMatrix getFK(double j_angles[6]);
-  static TransMatrix getFK(std::vector<double> j_angles);
+  double k;  // IK parametr, 0<=k<=1
+public:
+  Kinematics();
+
+  Kinematics(double th1, double th2, double th3,
+             double th4, double th5, double th6);
+
+  Kinematics(double x, double y, double z,
+             double theta, double grip_angle);
+
+  Kinematics(TransMatrix tm);
+
+  TransMatrix solveFK();
+  static TransMatrix solveFK(double th1, double th2, double th3, double th4, double th5, double th6);
+  static TransMatrix solveFK(double j_angles[6]);
+  static TransMatrix solveFK(std::vector<double> j_angles);
+
+  void setK(double k);
+  void solveIK(double result[5]);
+  static bool solveIK(double x, double y, double z,
+                      double theta,
+                      double grip_angle,
+                      double result[5]);
+
+  void getJAngles(double &th1, double &th2, double &th3,
+                  double &th4, double &th5, double &th6);
+
+  std::vector<double> getJAngles();
+  TransMatrix getMatrix();
 
 };
 
