@@ -9,6 +9,8 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
 )
 
+find_package(Curses REQUIRED)
+
 catkin_package()
 
 include_directories(
@@ -17,9 +19,14 @@ include_directories(
 )
 
 add_executable(${PROJECT_NAME}_node src/main.cpp src/kinematics.cpp src/trans_matrix.cpp)
+add_executable(rarm_keyboard_node src/rarm_keyboard_control.cpp)
 
 target_link_libraries(${PROJECT_NAME}_node
    ${catkin_LIBRARIES}
+)
+target_link_libraries(rarm_keyboard_node
+  ${catkin_LIBRARIES}
+  ${CURSES_LIBRARIES}
 )
 
 
