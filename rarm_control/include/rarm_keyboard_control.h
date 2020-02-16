@@ -8,7 +8,7 @@
 
 enum commands
 {
-  HOLD,
+  HALT,
   FORWARD,
   BACKWARD,
   RIGHT,
@@ -16,6 +16,8 @@ enum commands
   UP,
   DOWN,
   SPINUP,
-  SPINDOWN
+  SPINDOWN,
+  GRIP,
+  UNGRIP
 };
 

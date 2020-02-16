@@ -162,6 +162,49 @@ void Kinematics::solveIK(double result[5])
 
 }
 
+bool Kinematics::solveIK(std::vector<double> &angles)
+{
+    double x = ee_pose.getValue(0,3);
+    double y = ee_pose.getValue(1,3);
+    double z = ee_pose.getValue(2,3);
+    double alpha1 = atan2(y, x);                                // 1st joint's angle
+
+    double x5 = x - (L5 + F0*cos(th6) + F1) * cos(theta)*cos(alpha1);
+    double z5 = z + (L5 + F0*cos(th6) + F1) * sin(theta);
+
+    double x4 = x5 - L4 * sin((1-k)*(M_PI/2 + theta))*cos(alpha1); // some conditions for IK simplification
+    double z4 = z5 - L4 * cos((1-k)*(M_PI/2 + theta));
+
+    double r4 = sqrt(x4*x4 + z4*z4);
+    double beta = atan2(z4, x4);
+
+    double r3 = sqrt(L1*L1 + r4*r4 - 2*L1*r4*sin(beta));
+    double delta = atan2(x4, z4 - L1);
+
+    double s_d_a2 = 1/(2*r3*L2)*sqrt(((z4-L1)*(z4-L1) - (L3-L2)*(L3-L2)) * ((L2+L3)*(L2+L3) - (z4-L1)*(z4-L1)));
+    double c_d_a2 = (L2*L2 + r3*r3 - L3*L3)/(2*L2*r3);
+
+    double alpha2 = delta - atan2(s_d_a2, c_d_a2);               // 2nd joint's angle
+
+    double s_a3 = r3*sin(delta - alpha2)/L3;
+    double c_a3 = ((z4-L1)*(z4-L1) + x4*x4 -L3*L3 -L2*L2)/(2*L2*L3);
+    double alpha3 = atan2(s_a3, c_a3);                          // 3rd joint's angle
+
+    double alpha4 = (1-k)*(M_PI/2 + theta) - (alpha2 + alpha3); // 4th joint's angle
+    double alpha5 = k*(M_PI/2 + theta);                         // 5th joint's angle
+
+    if(isnan(alpha2) || isnan(alpha3)) // NaN value check
+      return false;
+
+    angles.push_back(alpha1);
+    angles.push_back(alpha2);
+    angles.push_back(alpha3);
+    angles.push_back(alpha4);
+    angles.push_back(alpha5);
+    angles.push_back(th6);
+
+}
+
 bool Kinematics::solveIK(double x, double y, double z,
                         double theta, double grip_angle,
                         double result[5])
@@ -205,6 +248,62 @@ bool Kinematics::solveIK(double x, double y, double z,
     result[2] = alpha3;
     result[3] = alpha4;
     result[4] = alpha5;
+
+    return true;
+
+  }
+
+  return false;
+
+}
+
+bool Kinematics::solveIK(double x, double y, double z,
+                         double theta,
+                         double grip_angle,
+                         std::vector<double> &res_ang)
+{
+
+  if((grip_angle >= 0.0 && grip_angle <= M_PI/2) &&
+     (theta >= -M_PI/2  && theta <= M_PI))
+  {
+    double k = 0.9;
+
+    double r = sqrt(x*x + y*y);
+    double alpha1 = atan2(y, x);                                // 1st joint's angle
+
+    double x5 = r - (L5 + F0*cos(grip_angle) + F1) * cos(theta)*cos(alpha1);
+    double z5 = z + (L5 + F0*cos(grip_angle) + F1) * sin(theta);
+
+    double x4 = x5 - L4 * sin((1-k)*(M_PI/2 + theta))*cos(alpha1); // some conditions for IK simplification
+    double z4 = z5 - L4 * cos((1-k)*(M_PI/2 + theta));
+
+    double r4 = sqrt(x4*x4 + z4*z4);
+    double beta = atan2(z4, x4);
+
+    double r3 = sqrt(L1*L1 + r4*r4 - 2*L1*r4*sin(beta));
+    double delta = atan2(x4, z4 - L1);
+
+    double s_d_a2 = 1/(2*r3*L2)*sqrt(((z4-L1)*(z4-L1) - (L3-L2)*(L3-L2)) * ((L2+L3)*(L2+L3) - (z4-L1)*(z4-L1)));
+    double c_d_a2 = (L2*L2 + r3*r3 - L3*L3)/(2*L2*r3);
+
+    double alpha2 = delta - atan2(s_d_a2, c_d_a2);               // 2nd joint's angle
+
+    double s_a3 = r3*sin(delta - alpha2)/L3;
+    double c_a3 = ((z4-L1)*(z4-L1) + x4*x4 -L3*L3 -L2*L2)/(2*L2*L3);
+    double alpha3 = atan2(s_a3, c_a3);                          // 3rd joint's angle
+
+    double alpha4 = (1-k)*(M_PI/2 + theta) - (alpha2 + alpha3); // 4th joint's angle
+    double alpha5 = k*(M_PI/2 + theta);                         // 5th joint's angle
+
+    if(isnan(alpha2) || isnan(alpha3)) // NaN value check
+      return false;
+
+    res_ang.push_back(alpha1);
+    res_ang.push_back(alpha2);
+    res_ang.push_back(alpha3);
+    res_ang.push_back(alpha4);
+    res_ang.push_back(alpha5);
+    res_ang.push_back(grip_angle);
 
     return true;
 

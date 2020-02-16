@@ -1,97 +1,162 @@
 #include "../include/main.h"
 
+double b_x, b_y, b_z, b_theta, b_gr_ang; // buffer
+
+void commandCallback(const std_msgs::Int32::ConstPtr &msg)
+{
+  switch (msg->data)
+  {
+  case FORWARD:
+    if(sqrt(b_x*b_x+b_y*b_y+b_z*b_z) <= L2+L3+L4+L5+F0+F1 || b_x < 0.0)
+      b_x += 0.001;
+    break;
+  case BACKWARD:
+    if(b_x > 0.0011)
+      b_x -= 0.001;
+    break;
+  case LEFT:
+    if(sqrt(b_x*b_x+b_y*b_y+b_z*b_z) <= L2+L3+L4+L5+F0+F1 || b_y < 0.0)
+      b_y += 0.001;
+    break;
+  case RIGHT:
+    if(sqrt(b_x*b_x+b_y*b_y+b_z*b_z) <= L2+L3+L4+L5+F0+F1 || b_y > 0.0)
+      b_y -= 0.001;
+    break;
+  case UP:
+    if(sqrt(b_x*b_x+b_y*b_y+b_z*b_z) <= L2+L3+L4+L5+F0+F1 || b_z < 0.0)
+      b_z += 0.001;
+    break;
+  case DOWN:
+    if(sqrt(b_x*b_x+b_y*b_y+b_z*b_z) <= L2+L3+L4+L5+F0+F1 || b_z > 0.0)
+      b_z -= 0.001;
+    break;
+  case SPINUP:
+    if(b_theta >= -88.0/180.0*M_PI)
+      b_theta -= M_PI/180.0 * 2.0;
+    break;
+  case SPINDOWN:
+    if(b_theta <= 178.0/180.0*M_PI)
+      b_theta += M_PI/180.0 * 2.0;
+    break;
+  case GRIP:
+    if(b_gr_ang >= 2.0/180.0*M_PI)
+      b_gr_ang -= M_PI/180.0 * 2.0;
+    break;
+  case UNGRIP:
+    if(b_gr_ang <= 88.0/180.0*M_PI)
+      b_gr_ang += M_PI/180.0 * 2.0;
+    break;
+
+  //default:
+  //  if(sqrt(b_x*b_x+b_y*b_y+b_z*b_z) <= L2+L3+L4+L5+F0+F1 || b_y < 0.0)
+  //    b_y += 0.0001;
+  //  break;
+
+  }
+
+}
+
 int main (int argc, char **argv){
 
   ros::init(argc,argv,"rarm_control_node");
   ros::NodeHandle node;
 
-  ROS_INFO("Test0");
-/*
-  TransMatrix *tr0 = new TransMatrix(1.0);
-  double test_arr[4][4];
-  tr0->getTMatrix(test_arr);
+  // Keyboard commands subscriber
+  ros::Subscriber command_sub = node.subscribe("/rarm_keyboard_control", 1, commandCallback);
 
-  for(int i=0; i<4; i++)
-  {
-    for(int j=0; j<4; j++)
-      std::cout<<test_arr[i][j]<<" ";
-    std::cout<<std::endl;
-  }
+  // Manipulator joints' Publishers
+  ros::Publisher j1_pub = node.advertise<std_msgs::Float64>("/rarm/joint1_position_controller/command", 1);
+  ros::Publisher j2_pub = node.advertise<std_msgs::Float64>("/rarm/joint2_position_controller/command", 1);
+  ros::Publisher j3_pub = node.advertise<std_msgs::Float64>("/rarm/joint3_position_controller/command", 1);
+  ros::Publisher j4_pub = node.advertise<std_msgs::Float64>("/rarm/joint4_position_controller/command", 1);
+  ros::Publisher j5_pub = node.advertise<std_msgs::Float64>("/rarm/joint5_position_controller/command", 1);
 
-  TransMatrix *tr1 = new TransMatrix( 0.0,  1.0,  2.0,   3.0,
-                                      4.0,  5.0,  6.0,   7.0,
-                                      8.0,  9.0, 10.0,  11.0,
-                                     12.0, 13.0, 14.0,  15.0);
+  // Gripper joints' publishers
+  ros::Publisher grip_j_l0_pub = node.advertise<std_msgs::Float64>("/rarm/gripper_joint_position_controller/command", 1);
+  ros::Publisher grip_j_l1_pub = node.advertise<std_msgs::Float64>("/rarm/grp_jnt_l1_position_controller/command", 1);
+  ros::Publisher grip_j_r0_pub = node.advertise<std_msgs::Float64>("/rarm/grp_jnt_r0_position_controller/command", 1);
+  ros::Publisher grip_j_r1_pub = node.advertise<std_msgs::Float64>("/rarm/grp_jnt_r1_position_controller/command", 1);
 
-  tr1->getTMatrix(test_arr);
+  b_x = 0.0;
+  b_y = 0.0;
+  b_z = 0.3;
+  b_theta = 0.0;
+  b_gr_ang = 0.0;
 
-  std::cout<<""<<std::endl;
-  for(int i=0; i<4; i++)
-  {
-    for(int j=0; j<4; j++)
-      std::cout<<test_arr[i][j]<<" ";
-    std::cout<<std::endl;
-  }
-
-  double r = 0.0;
-  double p = 0.0;
+  double x = 0.0;
   double y = 0.0;
+  double z = 0.0;
+  double theta = 0.0;
+  double gripper_ang = 0.0;
 
-  TransMatrix result;
-  result = TransMatrix::DHToM(0.0, 0.0, L1, 0.0) * TransMatrix::DHToM(-M_PI/2, 0.0, 0.0, -M_PI/2);
-  result.getRPY(r, p, y);
-
-  std::cout<<"R: "<<r<<"\tP: "<<p<<"\tYaw: "<<y<<std::endl;
-
-  std::ccout<<""<<std::endl;
-*/
-  double test_arr[4][4];
-  TransMatrix tr0;
-  tr0 = Kinematics::solveFK(0.0, 0.0, 0.0, 0.0, -M_PI/2, 0.0);
-
-  tr0.getTMatrix(test_arr);
-
-  for(int i=0; i<4; i++)
+  ros::Rate rate(30); //Hz
+  while(ros::ok())
   {
-    for(int j=0; j<4; j++)
-      std::cout<<test_arr[i][j]<<" ";
-    std::cout<<std::endl;
-  }
-  std::cout<<""<<std::endl;
+    //ROS_INFO("Test0");
+    //Kinematics *kin = new Kinematics(x, y, z, theta ,gripper_angle);
+    //Kinematics kin(x, y, z, theta ,gripper_angle);
+    std::vector<double> angles;
 
-  double r = 0.0;
-  double p = 0.0;
-  double y = 0.0;
+    //ROS_INFO("Joint")
 
-  tr0.getRPY(r, p, y);
-  std::cout<<"R: "<<r<<"\tP: "<<p<<"\tYaw: "<<y<<std::endl;
-  std::cout<<""<<std::endl;
+    //if(kin->solveIK(angles))
+    //angles = kin.getJAngles();
+    if(Kinematics::solveIK(b_x, b_y, b_z,
+                           b_theta,
+                           b_gr_ang,
+                           angles))
+    {
+      // Update values
+      x = b_x;
+      y = b_y;
+      z = b_z;
+      theta = b_theta;
+      gripper_ang = b_gr_ang;
 
-  TransMatrix tr1(0.0, 1.0, 0.0, 0.0,
-                  0.0, 0.0, 1.0, 0.0,
-                  1.0, 0.0, 0.0, 0.4659,
-                  0.0, 0.0, 0.0, 1.0);
+      std_msgs::Float64 msg;
+      msg.data = angles[0];
+      j1_pub.publish(msg);
 
-  Kinematics kn0(tr1);
-  kn0.setK(0.9);
+      msg.data = angles[1];
+      j2_pub.publish(msg);
 
-  std::vector<double> vec;
-  vec = kn0.getJAngles();
+      msg.data = angles[2];
+      j3_pub.publish(msg);
 
-  for(int i=0; i<5; i++)
-  {
-    std::cout<<vec[i]*180.0/M_PI<<" ";
-  }
-  std::cout<<""<<std::endl;
+      msg.data = angles[3];
+      j4_pub.publish(msg);
 
-  TransMatrix m = kn0.getMatrix();
+      msg.data = angles[4];
+      j5_pub.publish(msg);
 
-  std::cout<<"\ngetMatrix"<<std::endl;
-  for(int i=0; i<4; i++)
-  {
-    for(int j=0; j<4; j++)
-      std::cout<<m.getValue(i,j)<<" ";
-    std::cout<<std::endl;
+      msg.data = angles[5];
+      grip_j_l0_pub.publish(msg);
+
+      msg.data = - angles[5];
+      grip_j_r0_pub.publish(msg);
+
+      msg.data = - angles[5];
+      grip_j_l1_pub.publish(msg);
+
+      msg.data = angles[5];
+      grip_j_r1_pub.publish(msg);
+      ROS_INFO("%f\t%f\t%f\t%f\t%f\n", x, y, z, theta, gripper_ang);
+
+    }
+    else
+    {
+      ROS_INFO("IK error!");
+      // Downgrade buffer to valid values
+      b_x = x;
+      b_y = y;
+      b_z = z;
+      b_theta = theta;
+      b_gr_ang = gripper_ang;
+
+    }
+
+    ros::spinOnce();
+    rate.sleep();
   }
 
 

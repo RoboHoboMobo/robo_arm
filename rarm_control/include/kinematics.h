@@ -36,10 +36,16 @@ public:
 
   void setK(double k);
   void solveIK(double result[5]);
+  bool solveIK(std::vector<double> &angles);
   static bool solveIK(double x, double y, double z,
                       double theta,
                       double grip_angle,
                       double result[5]);
+
+  static bool solveIK(double x, double y, double z,
+                      double theta,
+                      double grip_angle,
+                      std::vector<double> &res_ang);
 
   void getJAngles(double &th1, double &th2, double &th3,
                   double &th4, double &th5, double &th6);

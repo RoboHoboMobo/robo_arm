@@ -6,3 +6,4 @@
 #include "sensor_msgs/JointState.h"
 
 #include "kinematics.h"
+#include "rarm_keyboard_control.h"
