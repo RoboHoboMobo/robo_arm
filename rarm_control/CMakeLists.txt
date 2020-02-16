@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   geometry_msgs
   sensor_msgs
+  rarm_msgs
 )
 
 find_package(Curses REQUIRED)
@@ -19,16 +20,16 @@ include_directories(
 )
 
 add_executable(${PROJECT_NAME}_node src/main.cpp src/kinematics.cpp src/trans_matrix.cpp)
-add_executable(rarm_keyboard_node src/rarm_keyboard_control.cpp)
-
 target_link_libraries(${PROJECT_NAME}_node
    ${catkin_LIBRARIES}
 )
+
+add_executable(rarm_keyboard_node src/rarm_keyboard_control.cpp)
 target_link_libraries(rarm_keyboard_node
   ${catkin_LIBRARIES}
   ${CURSES_LIBRARIES}
 )
-
+add_dependencies(rarm_keyboard_node ${catkin_EXPORTED_TARGETS})
 
 install(DIRECTORY config
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
