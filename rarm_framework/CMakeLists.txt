@@ -44,7 +44,11 @@ include_directories(
 )
 
 ## Declare a C++ library
-add_library(${PROJECT_NAME} src/kinematics.cpp src/trans_matrix.cpp)
+add_library(${PROJECT_NAME}
+    src/kinematics.cpp
+    src/trans_matrix.cpp
+    src/singleton.cpp
+)
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
 ## Add cmake target dependencies of the library
