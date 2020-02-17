@@ -1,35 +1,30 @@
 #ifndef SINGLETON_H
 #define SINGLETON_H
 
-class Controller_rarm
-{
-//public:
-//  Controller_rarm();
-//  virtual ~Controller_rarm();
-};
-
+template<class T>
 class SingletonDestroyer
 {
 private:
-    Controller_rarm* p_instance;
+    T* p_instance;
 public:
     ~SingletonDestroyer();
-    void initialize(Controller_rarm* p);
+    void initialize(T* p);
 };
 
+template<class T>
 class Singleton
 {
 private:
-    static Controller_rarm* p_instance;
-    static SingletonDestroyer destroyer;
+    static T* p_instance;
+    static SingletonDestroyer<T> destroyer;
 protected:
     Singleton() { }
     Singleton(const Singleton&);
     Singleton& operator=(const Singleton&);
    ~Singleton() { }
-    friend class SingletonDestroyer;
+    friend class SingletonDestroyer<T>;
 public:
-    static Controller_rarm& getInstance();
+    static T& getInstance();
 };
 
 #endif // SINGLETON_H
