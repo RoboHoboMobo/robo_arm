@@ -1,15 +1,33 @@
 #ifndef RARM_KEYBOARD_CONTROL_H
 #define RARM_KEYBOARD_CONTROL_H
-
+// ROS
 #include <ros/ros.h>
 #include "std_msgs/Float64.h"
 #include "std_msgs/Int32.h"
 #include "rarm_ctrl_vector_msg/Ctrl_vector_msg.h"
 
+// C/C++
 #include <string>
 #include <iostream>
 #include <ncurses.h>
 
+// rarm_framework
+#include "rarm_controller.h"
+
+class rarm_keyboard_controller : public rarm_controller
+{
+private:
+  rarm_ctrl_vector_msg::Ctrl_vector_msg input_msg;
+  ros::Publisher ctrl_pub;
+public:
+  rarm_keyboard_controller();
+  virtual ~rarm_keyboard_controller();
+
+  virtual void init(ros::NodeHandle* n);
+  virtual bool get_input();
+  virtual void send_msg();
+  virtual void quit();
+};
 
 
 enum KEYS   // NCurses key codes

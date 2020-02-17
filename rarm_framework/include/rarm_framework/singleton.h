@@ -1,6 +1,8 @@
 #ifndef SINGLETON_H
 #define SINGLETON_H
 
+// Singleton with automatic destoyer
+
 template<class T>
 class SingletonDestroyer
 {

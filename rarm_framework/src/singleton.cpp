@@ -1,4 +1,4 @@
-#include "../include/rarm_framework/singleton.h"
+#include "rarm_framework/singleton.h"
 
 template<class T>
 SingletonDestroyer<T>::~SingletonDestroyer()

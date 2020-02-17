@@ -1,3 +1,6 @@
+#ifndef TRANS_MATRIX_H
+#define TRANS_MATRIX_H
+
 #include <iostream>
 #include <cmath>
 #include <vector>
@@ -44,3 +47,5 @@ public:
 };
 
 TransMatrix operator*(double left, TransMatrix const &right);
+
+#endif // TRANS_MATRIX_H

@@ -1,3 +1,6 @@
+#ifndef KINEMATICS_H
+#define KINEMATICS_H
+
 #include <cmath>
 #include "trans_matrix.h"
 
@@ -55,3 +58,4 @@ public:
 
 };
 
+#endif // KINEMATICS_H
