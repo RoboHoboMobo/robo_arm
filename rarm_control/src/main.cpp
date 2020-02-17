@@ -1,4 +1,4 @@
-#include "../include/main.h"
+#include "main.h"
 
 double b_x, b_y, b_z, b_theta, b_gr_ang; // buffer
 

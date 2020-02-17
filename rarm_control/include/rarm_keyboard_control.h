@@ -1,12 +1,16 @@
+#ifndef RARM_KEYBOARD_CONTROL_H
+#define RARM_KEYBOARD_CONTROL_H
+
 #include <ros/ros.h>
 #include "std_msgs/Float64.h"
 #include "std_msgs/Int32.h"
-//#include "rarm_ctrl_msg/Ctrl_msg.h"
 #include "rarm_ctrl_vector_msg/Ctrl_vector_msg.h"
 
 #include <string>
 #include <iostream>
 #include <ncurses.h>
+
+
 
 enum KEYS   // NCurses key codes
 {
@@ -53,3 +57,4 @@ enum COMMANDS
   UNGRIP
 };
 
+#endif // RARM_KEYBOARD_CONTROL_H

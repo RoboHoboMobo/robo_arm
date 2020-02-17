@@ -1,4 +1,4 @@
-#include "../include/kinematics.h"
+#include "rarm_framework/kinematics.h"
 
 Kinematics::Kinematics()
 {

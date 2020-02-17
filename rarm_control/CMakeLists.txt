@@ -8,18 +8,23 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   sensor_msgs
   rarm_msgs
+  rarm_framework
 )
 
+find_package(rarm_framework REQUIRED)
 find_package(Curses REQUIRED)
 
-catkin_package()
+catkin_package(
+    INCLUDE_DIRS include
+    CATKIN_DEPENDS roscpp rospy std_msgs geometry_msgs sensor_msgs rarm_msgs rarm_framework
+)
 
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(${PROJECT_NAME}_node src/main.cpp src/kinematics.cpp src/trans_matrix.cpp)
+add_executable(${PROJECT_NAME}_node src/main.cpp)
 target_link_libraries(${PROJECT_NAME}_node
    ${catkin_LIBRARIES}
 )

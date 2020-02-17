@@ -41,6 +41,8 @@
   <build_depend>rarm_msgs</build_depend>
   <exec_depend>rarm_msgs</exec_depend>
 
+  <depend>rarm_framework</depend>
+
   <export>
   </export>
 

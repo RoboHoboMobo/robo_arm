@@ -1,4 +1,4 @@
-#include "../include/trans_matrix.h"
+#include "rarm_framework/trans_matrix.h"
 
 // Constructors
 TransMatrix::TransMatrix(double val)

@@ -1,4 +1,4 @@
-#include "../include/rarm_keyboard_control.h"
+#include "rarm_keyboard_control.h"
 
 int main (int argc, char **argv){
 
@@ -41,75 +41,73 @@ int main (int argc, char **argv){
 
     switch(input_key)
     {
+      case W:
+      case WL:
+        ctrl_msg.dof_name.data = "x";
+        ctrl_msg.control_value.data = 1;
+        break;
 
-    case W:
-    case WL:
-      ctrl_msg.dof_name.data = "x";
-      ctrl_msg.control_value.data = 1;
-      break;
+      case S:
+      case SL:
+        ctrl_msg.dof_name.data = "x";
+        ctrl_msg.control_value.data = 0;
+        break;
 
-    case S:
-    case SL:
-      ctrl_msg.dof_name.data = "x";
-      ctrl_msg.control_value.data = 0;
-      break;
+      case A:
+      case AL:
+        ctrl_msg.dof_name.data = "y";
+        ctrl_msg.control_value.data = 1;
+        break;
 
-    case A:
-    case AL:
-      ctrl_msg.dof_name.data = "y";
-      ctrl_msg.control_value.data = 1;
-      break;
+      case D:
+      case DL:
+        ctrl_msg.dof_name.data = "y";
+        ctrl_msg.control_value.data = 0;
+        break;
 
-    case D:
-    case DL:
-      ctrl_msg.dof_name.data = "y";
-      ctrl_msg.control_value.data = 0;
-      break;
+      case E:
+      case EL:
+        ctrl_msg.dof_name.data = "z";
+        ctrl_msg.control_value.data = 1;
+        break;
 
-    case E:
-    case EL:
-      ctrl_msg.dof_name.data = "z";
-      ctrl_msg.control_value.data = 1;
-      break;
+      case Q:
+      case QL:
+        ctrl_msg.dof_name.data = "z";
+        ctrl_msg.control_value.data = 0;
+        break;
 
-    case Q:
-    case QL:
-      ctrl_msg.dof_name.data = "z";
-      ctrl_msg.control_value.data = 0;
-      break;
+      case R:
+      case RL:
+        ctrl_msg.dof_name.data = "spin";
+        ctrl_msg.control_value.data = 1;
+        break;
 
-    case R:
-    case RL:
-      ctrl_msg.dof_name.data = "spin";
-      ctrl_msg.control_value.data = 1;
-      break;
+      case F:
+      case FL:
+        ctrl_msg.dof_name.data = "spin";
+        ctrl_msg.control_value.data = 0;
+        break;
 
-    case F:
-    case FL:
-      ctrl_msg.dof_name.data = "spin";
-      ctrl_msg.control_value.data = 0;
-      break;
+      case O:
+      case OL:
+        ctrl_msg.dof_name.data = "grip";
+        ctrl_msg.control_value.data = 1;
+        break;
 
-    case O:
-    case OL:
-      ctrl_msg.dof_name.data = "grip";
-      ctrl_msg.control_value.data = 1;
-      break;
+      case P:
+      case PL:
+        ctrl_msg.dof_name.data = "grip";
+        ctrl_msg.control_value.data = 0;
+        break;
 
-    case P:
-    case PL:
-      ctrl_msg.dof_name.data = "grip";
-      ctrl_msg.control_value.data = 0;
-      break;
-
-    case QUIT:
-      in_loop = false;
-      break;
+      case QUIT:
+        in_loop = false;
+        break;
     }
 
     ctrl_vec.ctrl_vector.push_back(ctrl_msg);
     ctrl_pub.publish(ctrl_vec);
-
 
     ros::spinOnce();
     rate.sleep();
@@ -121,7 +119,6 @@ int main (int argc, char **argv){
 
   endwin(); // Quit curses mode
 
-  //system("clear");
 
   return 0;
 }
