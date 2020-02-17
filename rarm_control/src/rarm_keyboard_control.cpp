@@ -3,102 +3,123 @@
 int main (int argc, char **argv){
 
   ros::init(argc,argv,"rarm_keyboard_control");
-  ros::NodeHandle node;
+  ros::NodeHandle n;
 
-  ros::Publisher get_key_pub = node.advertise<std_msgs::Int32>("rarm_keyboard_control", 1000);
+  ros::Publisher ctrl_pub = n.advertise<rarm_ctrl_vector_msg::Ctrl_vector_msg>
+                              ("rarm_keyboard_control", 1);
 
-  ROS_INFO("Use keyboard to control the manipulator");
-  ROS_INFO("Use 'WASD' to navigate in XY-plane");
-  ROS_INFO("Press 'E' to go up");
-  ROS_INFO("Press 'Q' to go down");
-  ROS_INFO("Press 'E' to go up");
-  ROS_INFO("Press 'R' to rotate up");
-  ROS_INFO("Press 'F' to rotate down");
-  ROS_INFO("Press 'O' to grip");
-  ROS_INFO("Press 'P' to unclasp");
+  // Curses library code
+  initscr(); // Init new screen
+  clear();   // Clear screen;
+  noecho();  // Don't display input characters
+  raw();     // Raw input without confirmation thru Enter key
 
+  bool in_loop = true;
+  ros::Rate rate(200); //Hz
+  while(ros::ok() && in_loop)
+  {
+    clear();
+    printw("***RARM_KEYBOARD_CONTROL_NODE***\n\n");
+    printw("Rollover is not enable!\n");
+    printw("Use 'WASD' to navigate in XY-plane\n");
+    printw("Press 'E' to go up\n");
+    printw("Press 'Q' to go down\n");
+    printw("Press 'R' to rotate up\n");
+    printw("Press 'F' to rotate down\n");
+    printw("Press 'O' to grip\n");
+    printw("Press 'P' to unclasp\n");
+    printw("\nPress Ctrl+C to quit\n");
 
-  ros::Rate rate(30); //Hz
+    rarm_ctrl_vector_msg::Ctrl_vector_msg ctrl_vec;
+    ctrl_vec.ctrl_vector.clear();
 
-  while(ros::ok()){
+    rarm_ctrl_msg::Ctrl_msg               ctrl_msg;
+    ctrl_msg.dof_name.data = "";
+    ctrl_msg.control_value.data = -1;
 
-    std_msgs::Int32 control_msg;
-    //std::stringstream sstream;
-
-    // Curses library code
-    WINDOW *w;
-    w=initscr();     // init new screen
-    cbreak();        // use cbreack call to make terminal send all keystrokes directly
-    nodelay(w,true); // non-blocking call for getch
-
-    refresh();       // push from buffer to the real terminal
-    endwin();
-
-    char input_key=getch();
+    int input_key = wgetch(stdscr);
 
     switch(input_key)
     {
-    case 'w':
-    case 'W':
-      control_msg.data = FORWARD;
+
+    case W:
+    case WL:
+      ctrl_msg.dof_name.data = "x";
+      ctrl_msg.control_value.data = 1;
       break;
 
-    case 's':
-    case 'S':
-      control_msg.data = BACKWARD;
+    case S:
+    case SL:
+      ctrl_msg.dof_name.data = "x";
+      ctrl_msg.control_value.data = 0;
       break;
 
-    case 'a':
-    case 'A':
-      control_msg.data = LEFT;
+    case A:
+    case AL:
+      ctrl_msg.dof_name.data = "y";
+      ctrl_msg.control_value.data = 1;
       break;
 
-    case 'd':
-    case 'D':
-      control_msg.data = RIGHT;
+    case D:
+    case DL:
+      ctrl_msg.dof_name.data = "y";
+      ctrl_msg.control_value.data = 0;
       break;
 
-    case 'q':
-    case 'Q':
-      control_msg.data = DOWN;
+    case E:
+    case EL:
+      ctrl_msg.dof_name.data = "z";
+      ctrl_msg.control_value.data = 1;
       break;
 
-    case 'e':
-    case 'E':
-      control_msg.data = UP;
+    case Q:
+    case QL:
+      ctrl_msg.dof_name.data = "z";
+      ctrl_msg.control_value.data = 0;
       break;
 
-    case 'r':
-    case 'R':
-      control_msg.data = SPINUP;
+    case R:
+    case RL:
+      ctrl_msg.dof_name.data = "spin";
+      ctrl_msg.control_value.data = 1;
       break;
 
-    case 'f':
-    case 'F':
-      control_msg.data = SPINDOWN;
+    case F:
+    case FL:
+      ctrl_msg.dof_name.data = "spin";
+      ctrl_msg.control_value.data = 0;
       break;
 
-    case 'o':
-    case 'O':
-      control_msg.data = GRIP;
+    case O:
+    case OL:
+      ctrl_msg.dof_name.data = "grip";
+      ctrl_msg.control_value.data = 1;
       break;
 
-    case 'p':
-    case 'P':
-      control_msg.data = UNGRIP;
+    case P:
+    case PL:
+      ctrl_msg.dof_name.data = "grip";
+      ctrl_msg.control_value.data = 0;
       break;
 
-    default:
-      control_msg.data = HALT;
+    case QUIT:
+      in_loop = false;
       break;
-
     }
 
-    get_key_pub.publish(control_msg);
+    ctrl_vec.ctrl_vector.push_back(ctrl_msg);
+    ctrl_pub.publish(ctrl_vec);
+
 
     ros::spinOnce();
     rate.sleep();
   }
+
+  noraw();
+  cbreak();
+  refresh();
+
+  endwin(); // Quit curses mode
 
   //system("clear");
 

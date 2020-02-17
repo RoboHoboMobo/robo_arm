@@ -2,56 +2,64 @@
 
 double b_x, b_y, b_z, b_theta, b_gr_ang; // buffer
 
-void commandCallback(const std_msgs::Int32::ConstPtr &msg)
+void commandCallback(const rarm_ctrl_vector_msg::Ctrl_vector_msg &msg)
 {
-  switch (msg->data)
+  for(std::vector<rarm_ctrl_msg::Ctrl_msg>::const_iterator it = msg.ctrl_vector.begin();
+      it != msg.ctrl_vector.end(); it++)
   {
-  case FORWARD:
-    if(sqrt(b_x*b_x+b_y*b_y+b_z*b_z) <= L2+L3+L4+L5+F0+F1 || b_x < 0.0)
-      b_x += 0.001;
-    break;
-  case BACKWARD:
-    if(b_x > 0.0011)
-      b_x -= 0.001;
-    break;
-  case LEFT:
-    if(sqrt(b_x*b_x+b_y*b_y+b_z*b_z) <= L2+L3+L4+L5+F0+F1 || b_y < 0.0)
-      b_y += 0.001;
-    break;
-  case RIGHT:
-    if(sqrt(b_x*b_x+b_y*b_y+b_z*b_z) <= L2+L3+L4+L5+F0+F1 || b_y > 0.0)
-      b_y -= 0.001;
-    break;
-  case UP:
-    if(sqrt(b_x*b_x+b_y*b_y+b_z*b_z) <= L2+L3+L4+L5+F0+F1 || b_z < 0.0)
-      b_z += 0.001;
-    break;
-  case DOWN:
-    if(sqrt(b_x*b_x+b_y*b_y+b_z*b_z) <= L2+L3+L4+L5+F0+F1 || b_z > 0.0)
-      b_z -= 0.001;
-    break;
-  case SPINUP:
-    if(b_theta >= -88.0/180.0*M_PI)
-      b_theta -= M_PI/180.0 * 2.0;
-    break;
-  case SPINDOWN:
-    if(b_theta <= 178.0/180.0*M_PI)
-      b_theta += M_PI/180.0 * 2.0;
-    break;
-  case GRIP:
-    if(b_gr_ang >= 2.0/180.0*M_PI)
-      b_gr_ang -= M_PI/180.0 * 2.0;
-    break;
-  case UNGRIP:
-    if(b_gr_ang <= 88.0/180.0*M_PI)
-      b_gr_ang += M_PI/180.0 * 2.0;
-    break;
+    if(it->dof_name.data == "x")
+    {
+      if(it->control_value.data == 0 && b_x > 0.0011)
+        b_x -= 0.001;
 
-  //default:
-  //  if(sqrt(b_x*b_x+b_y*b_y+b_z*b_z) <= L2+L3+L4+L5+F0+F1 || b_y < 0.0)
-  //    b_y += 0.0001;
-  //  break;
+      if(it->control_value.data == 1 &&
+         (sqrt(b_x*b_x+b_y*b_y+b_z*b_z) <= L2+L3+L4+L5+F0+F1 || b_x < 0.0))
+        b_x += 0.001;
+    }
 
+    if(it->dof_name.data == "y")
+    {
+      if(it->control_value.data == 0 &&
+         (sqrt(b_x*b_x+b_y*b_y+b_z*b_z) <= L2+L3+L4+L5+F0+F1 || b_y > 0.0))
+        b_y -= 0.001;
+
+      if(it->control_value.data == 1 &&
+         (sqrt(b_x*b_x+b_y*b_y+b_z*b_z) <= L2+L3+L4+L5+F0+F1 || b_y < 0.0))
+        b_y += 0.001;
+    }
+
+    if(it->dof_name.data == "z")
+    {
+      if(it->control_value.data == 0 &&
+         (sqrt(b_x*b_x+b_y*b_y+b_z*b_z) <= L2+L3+L4+L5+F0+F1 || b_z > 0.0011))
+        b_z -= 0.001;
+
+      if(it->control_value.data == 1 &&
+         (sqrt(b_x*b_x+b_y*b_y+b_z*b_z) <= L2+L3+L4+L5+F0+F1))
+        b_z += 0.001;
+    }
+
+    if(it->dof_name.data == "spin")
+    {
+      if(it->control_value.data == 0 &&
+         b_theta >= -88.0/180.0*M_PI)
+        b_theta -= M_PI/180.0 * 2.0;
+
+      if(it->control_value.data == 1 &&
+         b_theta <= 178.0/180.0*M_PI)
+        b_theta += M_PI/180.0 * 2.0;
+    }
+
+    if(it->dof_name.data == "grip")
+    {
+      if(it->control_value.data == 0 &&
+         b_gr_ang >= 2.0/180.0*M_PI)
+        b_gr_ang -= M_PI/180.0 * 2.0;
+
+      if(it->control_value.data == 1 &&
+         b_gr_ang <= 88.0/180.0*M_PI)
+        b_gr_ang += M_PI/180.0 * 2.0;
+    }
   }
 
 }
@@ -92,15 +100,8 @@ int main (int argc, char **argv){
   ros::Rate rate(30); //Hz
   while(ros::ok())
   {
-    //ROS_INFO("Test0");
-    //Kinematics *kin = new Kinematics(x, y, z, theta ,gripper_angle);
-    //Kinematics kin(x, y, z, theta ,gripper_angle);
+
     std::vector<double> angles;
-
-    //ROS_INFO("Joint")
-
-    //if(kin->solveIK(angles))
-    //angles = kin.getJAngles();
     if(Kinematics::solveIK(b_x, b_y, b_z,
                            b_theta,
                            b_gr_ang,
@@ -140,7 +141,7 @@ int main (int argc, char **argv){
 
       msg.data = angles[5];
       grip_j_r1_pub.publish(msg);
-      ROS_INFO("%f\t%f\t%f\t%f\t%f\n", x, y, z, theta, gripper_ang);
+      //ROS_INFO("%f\t%f\t%f\t%f\t%f\n", x, y, z, theta, gripper_ang);
 
     }
     else
@@ -152,7 +153,6 @@ int main (int argc, char **argv){
       b_z = z;
       b_theta = theta;
       b_gr_ang = gripper_ang;
-
     }
 
     ros::spinOnce();
